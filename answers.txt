@@ -1,0 +1,48 @@
+Student: Yichen Wu 504294181
+(Single Work)
+
+In BufferPool, HeapPageId, RecordId, SeqScan: Nothing special.
+
+In Catalog.java: 
+	I wrote a private class Table, 
+	and stored these tables with a HashMap<tableid, Table> within the catalog.
+
+In HeapFile: 
+	ReadFile(): I opened the file as RandomAccessFile and read data into the new HeapPage. 
+		(I expect raf.readFully(buffer,offset,length) function to safer, 
+		but it didn't work for unknown reason.
+		So I used raf.seek(offset); raf.read(buffer) instead. )
+	I added a HeapFile iterator class that implements DbFileIterator interface. 
+		It links all pages' tuple iterators together and acts like one.
+
+In HeapPage:
+	I avoided any Math.ceil() function in calculation by writing division like (A+B-1)/B.
+	I didn't explicitly create another iterator class like for HeapFileIterator
+		since a simple class "Iterator<Tuple>" is enough for a per-page iterator.
+
+    public Iterator<Tuple> iterator() {
+    	return new Iterator<Tuple>() {
+    	    private int tupleNo = 0;
+    	    public boolean hasNext() {
+    	    	if ((tupleNo < tuples.length) && (tuples[tupleNo] != null))
+    	    		return true;
+    	    	return false;
+    	    }
+    	    public Tuple next() throws NoSuchElementException {
+	    	if (!hasNext())
+	    	    throw new NoSuchElementException();
+	    	return tuples[tupleNo++];
+    	    }
+    	    public void remove() throws UnsupportedOperationException {
+    	    	throw new UnsupportedOperationException();
+    	    }
+        };
+    }
+
+Changes to API: No.
+
+I spent 2 hrs setting up the tools, 7 hrs filling in all codes, and 6 hrs debugging all test cases.
+This iterator object is just new to me that it took almost half of the coding time to implement.
+File I/O also causes bugs and exceptions that consumes time.
+
+
